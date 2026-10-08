@@ -1,0 +1,20 @@
+stages:
+  ingest:
+    cmd: python -m src.data.ingest
+    deps:
+      - src/data/ingest.py
+    outs:
+      - data/raw:
+          persist: true
+
+  preprocess:
+    cmd: python -m src.data.preprocess
+    deps:
+      - src/data/preprocess.py
+      - data/raw
+    outs:
+      - data/processed/X_train_ds1.npy
+      - data/processed/y_train_ds1.npy
+      - data/processed/X_test_ds2.npy
+      - data/processed/y_test_ds2.npy
+
