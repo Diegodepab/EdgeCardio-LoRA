@@ -1,0 +1,27 @@
+# ==============================================================================
+# EdgeCardio-LoRA: Production Edge Container
+# Ultra-lightweight runtime (< 150 MB) using uv installer and base pyproject.toml
+# ==============================================================================
+
+FROM python:3.10-slim
+
+# Copy uv binaries directly from official image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Create non-root system user
+RUN useradd -m appuser
+WORKDIR /app
+
+# Copy dependency configuration and source files
+COPY pyproject.toml uv.lock* ./
+COPY src/__init__.py ./src/__init__.py
+COPY src/api ./src/api
+COPY models/quantized/baseline_int8.onnx ./models/quantized/
+
+# Install ONLY the base edge dependencies into system python
+RUN uv pip install --system --no-cache .
+
+USER appuser
+EXPOSE 8000
+
+CMD ["uvicorn", "src.api.app:app", "--host", "0.0.0.0", "--port", "8000"]
